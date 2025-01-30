@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = [
             'customerRefNo' => $phone,
             'Password' => 'AQWE@123',
-            'ConfirmPassword' => 'QWE@123',
+            'ConfirmPassword' => 'AQWE@123',
             'OTP' => $otp
         ];
 
