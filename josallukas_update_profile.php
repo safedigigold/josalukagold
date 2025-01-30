@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" id="email" name="email" value="andrew@gmail.com" readonly>
 
             <label for="phone">Phone:</label>
-            <input type="text" id="phone" name="phone" value="845958954" readonly>
+            <input type="text" id="phone" name="phone" value="9451501390" readonly>
 
             <label for="dob">Date of Birth:</label>
             <input type="date" id="dob" name="dob" required>
