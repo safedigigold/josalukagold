@@ -1,15 +1,18 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['submit_dob'])) {
+        // Save DOB and redirect with data and dob as GET parameters
         $data = $_POST['data'];
         $dob = $_POST['dob'];
         header("Location: ?data=" . urlencode($data) . "&dob=" . urlencode($dob));
         exit();
     } elseif (isset($_POST['submit_otp'])) {
+        // Handle OTP submission
         $data = base64_decode($_POST['data']);
         list($name, $email, $phone) = explode(':', $data);
         $otp = $_POST['otp'];
 
+        // Prepare the data for API request
         $dataArray = [
             'customerRefNo' => $phone,
             'Password' => 'QWE@123',
@@ -54,10 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-function base64EncodeData($name, $email, $phone) {
-    return base64_encode("$name:$email:$phone");
-}
-
+// Decode data and dob for display
 $data = $_GET['data'] ?? '';
 $dob = $_GET['dob'] ?? '';
 if ($data) {
@@ -77,7 +77,7 @@ if ($data) {
     <style>
         body {
             font-family: sans-serif;
-            background-color: #ffe590;
+            background-color: #f9f9f9;
             margin: 0;
             padding: 0;
             display: flex;
@@ -86,26 +86,12 @@ if ($data) {
             min-height: 100vh;
         }
 
-        .header {
-            background-color: #571613;
-            color: white;
-            width: 100%;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            height: 50px;
-        }
-
         .container {
             background-color: white;
             padding: 20px;
-            margin-top: 20px;
+            margin-top: 50px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             width: 400px;
             text-align: center;
         }
@@ -113,13 +99,16 @@ if ($data) {
         label {
             display: block;
             margin-bottom: 5px;
+            font-weight: bold;
         }
 
-        input[type="date"], input[type="text"] {
+        input[type="text"],
+        input[type="date"],
+        input[type="password"] {
             width: calc(100% - 10px);
             padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
         }
@@ -131,51 +120,40 @@ if ($data) {
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #892023;
         }
 
         .success-message {
             color: green;
             margin-top: 10px;
-            display: <?php echo isset($successMessage) ? 'block' : 'none'; ?>;
         }
 
         .error-message {
             color: red;
             margin-top: 10px;
-            display: <?php echo isset($errorMessage) ? 'block' : 'none'; ?>;
-        }
-
-        .footer {
-            background-color: #571613;
-            color: white;
-            width: 100%;
-            padding: 20px;
-            text-align: center;
-            margin-top: auto;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <img class="logo" src="https://www.josalukkasdigigold.com/assets/images/header/jos-digi-logo.svg" alt="Jos Alukkas Digi Gold Logo">
-        <img class="logo" src="https://www.josalukkasdigigold.com/assets/images/header/mmtc-logo.svg" alt="MMTC Logo">
-    </div>
-
     <div class="container">
         <h2>Update Your Profile</h2>
 
-        <?php if (!$dob): ?>
+        <?php if (empty($dob)): ?>
+        <!-- DOB Form -->
         <form method="POST" action="">
-            <input type="hidden" name="data" value="<?php echo htmlspecialchars($_GET['data'] ?? ''); ?>">
-
+            <input type="hidden" name="data" value="<?php echo htmlspecialchars($data); ?>">
             <label for="dob">Date of Birth:</label>
             <input type="date" id="dob" name="dob" required>
-
             <button type="submit" name="submit_dob">Submit</button>
         </form>
         <?php else: ?>
+        <!-- OTP Form -->
         <form method="POST" action="">
-            <input type="hidden" name="data" value="<?php echo htmlspecialchars($_GET['data']); ?>">
+            <input type="hidden" name="data" value="<?php echo htmlspecialchars($data); ?>">
 
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($name); ?>" readonly>
@@ -188,22 +166,21 @@ if ($data) {
 
             <label for="otp">Enter OTP:</label>
             <input type="text" id="otp" name="otp" required>
-
             <button type="submit" name="submit_otp">Update Profile</button>
         </form>
         <?php endif; ?>
 
+        <!-- Messages -->
+        <?php if (!empty($successMessage)): ?>
         <div class="success-message">
-            <?php echo $successMessage ?? ''; ?>
+            <?php echo $successMessage; ?>
         </div>
-
+        <?php endif; ?>
+        <?php if (!empty($errorMessage)): ?>
         <div class="error-message">
-            <?php echo $errorMessage ?? ''; ?>
+            <?php echo $errorMessage; ?>
         </div>
-    </div>
-
-    <div class="footer">
-        2025 Jos Alukkas Group. All rights reserved. The product/service names listed in this document are marks and/or registered marks of their respective owners and used under license. Unauthorized use strictly prohibited.
+        <?php endif; ?>
     </div>
 </body>
 </html>
