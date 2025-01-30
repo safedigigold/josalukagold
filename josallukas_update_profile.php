@@ -11,7 +11,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['submit_dob'])) {
         $phone = $_POST['phone'];
         $dob = $_POST['dob'];
-    } elseif (isset($_POST['submit_otp'])) {
+
+        // Prepare the data to be encrypted (phone number)
+        $requestData = [
+            '_mobileNumber' => $phone
+        ];
+
+        $jsonData = json_encode($requestData);
+
+        // AES encryption setup
+        $key = "ABC0DEF1GHI2JL3MNO4PQR5STU6VWX7Y"; // Replace with your actual key
+        $iv = "A9B8G7H6E1T0I2Q1"; // Replace with your actual IV
+
+        $encryptedData = openssl_encrypt($jsonData, 'AES-256-CBC', $key, 0, $iv);
+
+        // Prepare the request body with the encrypted data
+        $requestBody = [
+            'RequestBody' => $encryptedData,
+            'API_Version' => 'V1',
+            'Format' => 'Json',
+            'Secured' => 'Yes',
+            'Engine' => 'JosAlukkas Professional Security',
+            'ECode' => 'JADG@2022',
+            'Mode' => 'Strict-mode',
+            'ServerTime' => gmdate('Y-m-d\TH:i:s\Z')
+        ];
+
+        // Send the POST request to the OTP generation API
+        $ch = curl_init('https://www.josalukkasdigigold.com/backend/api/SMS/Server/SendVerificationCode/');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Host: www.josalukkasdigigold.com',
+            'Content-Length: ' . strlen(json_encode($requestBody)),
+            'Content-Type: application/json'
+        ]);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // Handle the response from the OTP generation API
+        $responseData = json_decode($response, true);
+
+        if ($responseData['status'] == 'success') {
+            $otpMessage = "OTP has been sent to your phone number.";
+        } else {
+            $errorMessage = "Failed to send OTP. Please try again.";
+        }
+    }
+
+    if (isset($_POST['submit_otp'])) {
         $phone = $_POST['phone'];
         $otp = $_POST['otp'];
 
@@ -24,8 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $jsonData = json_encode($data);
 
-        $key = "ABC0DEF1GHI2JL3MNO4PQR5STU6VWX7Y";
-        $iv = "A9B8G7H6E1T0I2Q1";
+        // AES encryption setup for password reset API
+        $key = "ABC0DEF1GHI2JL3MNO4PQR5STU6VWX7Y"; // Replace with your actual key
+        $iv = "A9B8G7H6E1T0I2Q1"; // Replace with your actual IV
 
         $encryptedData = openssl_encrypt($jsonData, 'AES-256-CBC', $key, 0, $iv);
 
@@ -40,11 +91,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'ServerTime' => gmdate('Y-m-d\TH:i:s\Z')
         ];
 
+        // Send the POST request to the OTP verification API
         $ch = curl_init('https://www.josalukkasdigigold.com/backend/api/User/Customer/ResetPassword/');
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json'
+        ]);
 
         $response = curl_exec($ch);
         curl_close($ch);
@@ -128,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .success-message {
             color: green;
             margin-top: 10px;
-            display: <?php echo isset($successMessage) ? 'block' : 'none'; ?>;
+            display: <?php echo isset($otpMessage) ? 'block' : 'none'; ?>;
         }
 
         .error-message {
@@ -187,6 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="success-message">
+            <?php echo $otpMessage ?? ''; ?>
             <?php echo $successMessage ?? ''; ?>
         </div>
 
