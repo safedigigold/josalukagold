@@ -1,9 +1,10 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['submit_dob'])) {
-        $data = base64_decode($_POST['data']);
-        list($name, $email, $phone) = explode(':', $data);
+        $data = $_POST['data'];
         $dob = $_POST['dob'];
+        header("Location: ?data=" . urlencode($data) . "&dob=" . urlencode($dob));
+        exit();
     } elseif (isset($_POST['submit_otp'])) {
         $data = base64_decode($_POST['data']);
         list($name, $email, $phone) = explode(':', $data);
@@ -57,12 +58,14 @@ function base64EncodeData($name, $email, $phone) {
     return base64_encode("$name:$email:$phone");
 }
 
-// Default data for demonstration purposes
-$name = $name ?? 'Andrew Garfield';
-$email = $email ?? 'andrew@gmail.com';
-$phone = $phone ?? '845958954';
-$dataEncoded = base64EncodeData($name, $email, $phone);
-$dob = $dob ?? '';
+$data = $_GET['data'] ?? '';
+$dob = $_GET['dob'] ?? '';
+if ($data) {
+    $decodedData = base64_decode($data);
+    list($name, $email, $phone) = explode(':', $decodedData);
+} else {
+    $name = $email = $phone = '';
+}
 ?>
 
 <!DOCTYPE html>
@@ -150,10 +153,6 @@ $dob = $dob ?? '';
             text-align: center;
             margin-top: auto;
         }
-
-        .otp-section {
-            display: <?php echo isset($phone) && isset($dob) ? 'block' : 'none'; ?>;
-        }
     </style>
 </head>
 <body>
@@ -164,35 +163,35 @@ $dob = $dob ?? '';
 
     <div class="container">
         <h2>Update Your Profile</h2>
-        <p>Please update your profile details.</p>
 
+        <?php if (!$dob): ?>
         <form method="POST" action="">
-            <input type="hidden" name="data" value="<?php echo $dataEncoded; ?>">
-
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" value="<?php echo $name; ?>" readonly>
-
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email" value="<?php echo $email; ?>" readonly>
-
-            <label for="phone">Phone:</label>
-            <input type="text" id="phone" name="phone" value="<?php echo $phone; ?>" readonly>
+            <input type="hidden" name="data" value="<?php echo htmlspecialchars($_GET['data'] ?? ''); ?>">
 
             <label for="dob">Date of Birth:</label>
-            <input type="date" id="dob" name="dob" value="<?php echo $dob; ?>" required>
+            <input type="date" id="dob" name="dob" required>
 
             <button type="submit" name="submit_dob">Submit</button>
         </form>
+        <?php else: ?>
+        <form method="POST" action="">
+            <input type="hidden" name="data" value="<?php echo htmlspecialchars($_GET['data']); ?>">
 
-        <div class="otp-section">
-            <form method="POST" action="">
-                <input type="hidden" name="data" value="<?php echo $dataEncoded; ?>">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($name); ?>" readonly>
 
-                <label for="otp">Enter OTP:</label>
-                <input type="text" id="otp" name="otp" required>
-                <button type="submit" name="submit_otp">Update Profile</button>
-            </form>
-        </div>
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
+
+            <label for="phone">Phone:</label>
+            <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($phone); ?>" readonly>
+
+            <label for="otp">Enter OTP:</label>
+            <input type="text" id="otp" name="otp" required>
+
+            <button type="submit" name="submit_otp">Update Profile</button>
+        </form>
+        <?php endif; ?>
 
         <div class="success-message">
             <?php echo $successMessage ?? ''; ?>
